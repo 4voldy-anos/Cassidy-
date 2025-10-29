@@ -5,7 +5,7 @@
 export const meta = {
   name: "gift",
   description: "Claim your gift every 20 minutes.",
-  version: "2.0.5",
+  version: "3.0.5",
   author: "@lianecagara",
   category: "Rewards",
   permissions: [0],
@@ -43,9 +43,7 @@ async function handlePaid({
   Inventory,
   generateGift,
   Collectibles,
-  langParser,
 }) {
-  const getLang = langParser.createGetLang(langs);
   let { inventory: rawInv = [], collectibles: rawCll = [] } =
     await money.getItem(input.senderID);
   if (String(input.words[0]).toLowerCase() !== "buy") {
@@ -56,7 +54,7 @@ async function handlePaid({
     amount = 1;
   }
   if (rawInv.length + amount > invLimit) {
-    return output.replyStyled(getLang("tooManyItems"), style);
+    return output.replyStyled("❌ You're carrying too many items!", style);
   }
   const inventory = new Inventory(rawInv);
   const collectibles = new Collectibles(rawCll);
@@ -64,7 +62,7 @@ async function handlePaid({
     if (input.isAdmin && input.words[1] === "cheat") {
     } else {
       return output.replyStyled(
-        getLang("notEnoughGems", diaCost * amount),
+        `❌ You don't have ${diaCost * amount}💎 to purchase it.`,
         style
       );
     }
@@ -93,17 +91,12 @@ async function handlePaid({
     inventory: Array.from(inventory),
     collectibles: Array.from(collectibles),
   });
-  const data = await output.replyStyled(
-    getLang(
-      "boughtGift",
-      firstGift.icon,
-      firstGift.name,
-      String(pCy(collectibles.getAmount("gems"))),
-      String(diaCost * amount),
-      amount
-    ),
-    style
-  );
+  const boughtGift = `✅ You bought a **${firstGift.icon} ${
+    firstGift.name
+  }** **(x${amount})**! Check your inventory to see it.\n\n💎 **${pCy(
+    collectibles.getAmount("gems")
+  )}** (-${diaCost * amount})`;
+  const data = await output.replyStyled(boughtGift, style);
   data.atReply(handlePaid);
 }
 
@@ -142,17 +135,15 @@ export async function entry({
   Inventory,
   generateGift,
   Collectibles,
-  langParser,
   prefix,
 }) {
-  const getLang = langParser.createGetLang(langs);
   let {
     inventory: rawInv = [],
     lastGiftClaim,
     collectibles: rawCll = [],
   } = await money.getItem(input.senderID);
   if (rawInv.length >= invLimit) {
-    return output.reply(getLang("tooManyItems"));
+    return output.reply("❌ You're carrying too many items!");
   }
   const inventory = new Inventory(rawInv);
   const collectibles = new Collectibles(rawCll);
@@ -176,16 +167,12 @@ export async function entry({
       );
       const minutesRemaining = Math.floor((timeRemaining / (1000 * 60)) % 60);
       const secondsRemaining = Math.floor((timeRemaining / 1000) % 60);
+      const alreadyClaimed = `⏳ You've already claimed your free gift. Please wait for ${hoursRemaining} hours, ${minutesRemaining} minutes, and ${secondsRemaining} seconds before claiming again.\nReply **buy** and <amount> to purchase a fortune **envelope** for ${diaCost}💎\n\n**💎 ${pCy(
+        collectibles.getAmount("gems")
+      )}**`;
 
       const info = await output[input.isWeb ? "reply" : "attach"](
-        getLang(
-          "alreadyClaimed",
-          String(hoursRemaining),
-          minutesRemaining,
-          secondsRemaining,
-          diaCost,
-          pCy(collectibles.getAmount("gems"))
-        ),
+        alreadyClaimed,
         input.isWeb ? undefined : "http://localhost:8000/gift.png"
       );
       info.atReply(handlePaid);
@@ -203,25 +190,15 @@ export async function entry({
       inventory: Array.from(inventory),
       lastGiftClaim: currentTime,
     });
+    const claimedGift = `🎁 You've claimed your free gift ${
+      giftItem.type === "treasure" ? "treasure" : "pack"
+    }! Check your inventory and come back later for more.\n\nTo open, use **${prefix}bc use ${
+      giftItem.type === "treasure" ? "gift" : "giftPack"
+    }** without fonts.`;
 
     if (input.isWeb) {
-      return output.reply(
-        getLang(
-          "claimedGift",
-          prefix,
-          giftItem.type === "treasure" ? "treasure" : "pack",
-          giftItem.type === "treasure" ? "gift" : "giftPack"
-        )
-      );
+      return output.reply(claimedGift);
     }
-    return output.attach(
-      getLang(
-        "claimedGift",
-        prefix,
-        giftItem.type === "treasure" ? "treasure" : "pack",
-        giftItem.type === "treasure" ? "gift" : "giftPack"
-      ),
-      "http://localhost:8000/gift.png"
-    );
+    return output.attach(claimedGift, "http://localhost:8000/gift.png");
   }
 }

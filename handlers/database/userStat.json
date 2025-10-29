@@ -3,7 +3,7 @@
     "money": 10,
     "exp": 0,
     "battlePoints": 410,
-    "lastModified": 1761726515602,
+    "lastModified": 1761726559830,
     "name": "Liane",
     "usernameHistory": [
       "Liane"
@@ -249,6 +249,19 @@
         "cannotToss": false
       },
       {
+        "name": "Gift Pack",
+        "icon": "🎁🎴",
+        "flavorText": "This is a gift item, this item might grant you something. It's not guaranteed enough, you can use this using inventory command, if you know..",
+        "sellPrice": 100,
+        "type": "roulette_pack",
+        "treasureKey": "generic",
+        "key": "giftPack",
+        "cannotSend": true,
+        "uuid": "1761726559829_9b0cdd4a-d751-4704-ae38-1bf6f9bdb141",
+        "index": 21,
+        "cannotToss": false
+      },
+      {
         "name": "Lotto Ticket",
         "key": "lottoTicket",
         "flavorText": "A mysterious ticket purchased from the Meow Shop. Its purpose remains unclear, but it brims with potential.",
@@ -368,7 +381,33 @@
         "atk": 5,
         "def": 1,
         "uuid": "1761726515599_d824d8cd-b1f8-43cc-8b0b-f635602c3649",
+        "index": 17,
+        "cannotToss": false
+      },
+      {
+        "key": "tilesBomb",
+        "name": "Tiles Bomb",
+        "flavorText": "These are leftover bombs from the tiles game, you need to get rid of these ASAP.",
+        "icon": "💣",
+        "sellPrice": 100,
+        "type": "weapon",
+        "atk": 5,
+        "def": 1,
+        "uuid": "1761726527625_664aec0b-15f5-4ee5-8e92-518f6ddd3111",
         "index": 18,
+        "cannotToss": false
+      },
+      {
+        "key": "tilesBomb",
+        "name": "Tiles Bomb",
+        "flavorText": "These are leftover bombs from the tiles game, you need to get rid of these ASAP.",
+        "icon": "💣",
+        "sellPrice": 100,
+        "type": "weapon",
+        "atk": 5,
+        "def": 1,
+        "uuid": "1761726532741_d678b64f-0e45-4cf2-82dd-2a2e47719cd3",
+        "index": 19,
         "cannotToss": false
       },
       {
@@ -392,7 +431,7 @@
         "prob": 0.14,
         "isGift": true,
         "uuid": "1759317143983_6eb72f3a-7fcd-46ea-982a-42c029f46bfb",
-        "index": 17,
+        "index": 20,
         "cannotToss": false
       }
     ],
@@ -1107,7 +1146,7 @@
       "expansions": 0,
       "achievements": []
     },
-    "lastGiftClaim": 1758983202158,
+    "lastGiftClaim": 1761726559829,
     "dailyStreak": 2,
     "lastDailyClaim": 1761646449551,
     "tileConfig": {
@@ -1116,6 +1155,6 @@
       "tileIcon": "🟨",
       "emptyIcon": "⬜"
     },
-    "tilesRunStamp": 1761726512987
+    "tilesStamp": 1761726532744
   }
 }
