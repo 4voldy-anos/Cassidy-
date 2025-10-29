@@ -140,28 +140,28 @@ export async function entry({ money, input, output, CassEXP }: CommandContext) {
     fill: "rgba(0, 0, 0, 0.5)",
   });
 
-  const lines = CanvCass.lineYs(container.height, 2);
-  const d = lines[1] - lines[0];
-
-  const margin = 100;
+  const marginX = 100;
 
   const top = topData.findIndex((i) => i[1].userID === senderID) + 1;
 
+  const marginY = 100;
   canv.drawText(`👤 ${data.name}`, {
-    cssFont: `bold 50px Cassieah-Bold, EMOJI, sans-serif`,
-    x: container.left + margin,
-    y: lines.at(0),
+    x: container.left + marginX,
+    y: container.top + marginY,
     align: "left",
     baseline: "middle",
     fill: "white",
+    size: 50,
+    fontType: "cbold",
   });
   canv.drawText(`#${top}`, {
-    cssFont: `bold 60px Cassieah-Bold, EMOJI, sans-serif`,
-    x: container.right - margin,
-    y: lines.at(0),
+    x: container.right - marginX,
+    y: container.top + marginY,
     align: "right",
     baseline: "middle",
     fill: "white",
+    size: 60,
+    fontType: "cbold",
   });
 
   const per = Math.min(
@@ -170,15 +170,15 @@ export async function entry({ money, input, output, CassEXP }: CommandContext) {
   );
 
   const bar = CanvCass.createRect({
-    left: margin,
-    centerY: lines.at(1),
-    width: canv.width - margin * 2,
+    left: marginX,
+    centerY: container.bottom - marginY,
+    width: canv.width - marginX * 2,
     height: 70,
   });
   const barP = CanvCass.createRect({
-    left: margin,
-    centerY: lines.at(1),
-    width: (canv.width - margin * 2) * per,
+    left: marginX,
+    centerY: container.bottom - marginY,
+    width: (canv.width - marginX * 2) * per,
     height: 70,
   });
   canv.drawBox({
@@ -191,12 +191,13 @@ export async function entry({ money, input, output, CassEXP }: CommandContext) {
   });
 
   canv.drawText(`Level ${cxp.getLevel()}`, {
-    cssFont: `bold 40px Cassieah-Bold, EMOJI, sans-serif`,
-    x: container.left + margin,
-    y: lines.at(0) + d / 2,
+    fontType: "cbold",
+    x: container.left + marginX,
+    y: barP.top - 20,
+    vAlign: "top",
     align: "left",
-    baseline: "middle",
     fill: "white",
+    size: 40,
   });
 
   canv.drawText(
@@ -204,12 +205,12 @@ export async function entry({ money, input, output, CassEXP }: CommandContext) {
       cxp.getNextEXP() - CassEXP.getEXPFromLevel(cxp.level - 1)
     }`,
     {
-      cssFont: `bold 40px Cassieah-Bold, EMOJI, sans-serif`,
       x: bar.centerX,
-      y: lines.at(1),
+      y: bar.centerY,
       align: "center",
-      baseline: "middle",
       fill: "white",
+      size: 40,
+      fontType: "cbold",
     }
   );
 
