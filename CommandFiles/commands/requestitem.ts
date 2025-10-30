@@ -249,18 +249,81 @@ const home = new BriefcaseAPI(
       },
     },
     {
+      key: "getjson",
+      description: "Extract the JSON of an item from your inventory.",
+      args: ["<item_key>"],
+      async handler({ output }, { spectralArgs }, { userData }) {
+        const key = spectralArgs[0];
+        const head = `👤 **${userData.name || "Unregistered"}**\n\n`;
+
+        if (!key) {
+          return output.reply(
+            head +
+              `Please provide the **item key** of an item from your inventory to get the JSON data.`
+          );
+        }
+        const local = new Inventory(userData.inventory);
+        const item = local.getOne(key);
+        if (!item) {
+          return output.reply(
+            head + `Item with key "${key}" does **not** exist.`
+          );
+        }
+        return output.reply(
+          head +
+            `📄 Here is the requested **JSON Data**\n\n${JSON.stringify(
+              item,
+              null,
+              2
+            )}`
+        );
+      },
+    },
+    {
       key: "submit",
       description: "Submit a JSON of your requested item.",
       args: ["<json data>"],
-      async handler({ output }, { spectralArgs }, bcContext) {
-        const json = spectralArgs.join(" ");
-        const validation = validateItemSubmission(json);
-
-        if (validation.success === false) {
+      async handler(
+        { output, usersDB, input },
+        { spectralArgs },
+        { userData, inventory, iKey, listItem }
+      ) {
+        const head = `👤 **${userData.name || "Unregistered"}**\n\n`;
+        if (inventory.size() >= inventory.limit) {
           return output.reply(
-            `${UNISpectra.disc} Your submission has been automatically rejected.\n\n💬 **Feedback**:\n${validation.err}`
+            head + `❌ Your request item inventory is **full**! Toss something.`
           );
         }
+        const json = spectralArgs.join(" ");
+        const validation = validateItemSubmission(json);
+        const rej = `${UNISpectra.disc} ❌ Your submission has been automatically rejected.\n\n💬 **Feedback**:`;
+
+        if (validation.success === false) {
+          return output.reply(head + `${rej}\n${validation.err}`);
+        }
+        const item = validation.item;
+        if (inventory.has(item.key)) {
+          return output.reply(
+            head +
+              `${rej}\nItem with the key of "${item.key}" already exists in your requested items, you might consider tossing it, or using a different item key.`
+          );
+        }
+        inventory.addOne(item);
+        await usersDB.setItem(input.senderID, {
+          [iKey]: Array.from(inventory),
+        });
+        return output.reply(
+          head +
+            `${
+              UNISpectra.disc
+            } ✅ Your submission has been successful. Please wait for the **admin approval**.\n\n${listItem(
+              item
+            )}\n${UNISpectra.charm} ${item.flavorText}\n\n${JSON.stringify(
+              item,
+              null,
+              2
+            )}\n\n💡 **Tip**: If you want to undo the submission, simply toss the item. You can list all submitted items.`
+        );
       },
     },
   ]
