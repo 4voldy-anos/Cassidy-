@@ -1,3 +1,4 @@
+// @ts-check
 export const meta = {
   name: "cassexpress",
   author: "Liane Cagara",
@@ -13,6 +14,7 @@ const logo = `✪ 𝖯𝗈𝗐𝖾𝗋𝖾𝖽 𝖡𝗒
 
 const { parseCurrency: pCy } = global.utils;
 
+import { parseBet } from "@cass-modules/ArielUtils";
 import { G4F } from "g4f";
 import { number } from "mathjs";
 
@@ -139,6 +141,15 @@ export class CustomAI {
 }
 
 export class CassExpress {
+  /**
+   * @type {{ mailList: { body: string; timeStamp: number; author: string; title: string; isRead?: boolean; }[]; bankLogs: { type: "in" | "interest" | "out"; amount: number; timeStamp: number }[] }}
+   */
+  cassExpress;
+
+  /**
+   *
+   * @param {Partial<CassExpress["cassExpress"]>} cassExpress
+   */
   constructor(cassExpress) {
     this.cassExpress = JSON.parse(JSON.stringify(cassExpress));
     this.cassExpress.mailList = (this.cassExpress.mailList || []).filter(
@@ -148,6 +159,12 @@ export class CassExpress {
       Boolean
     );
   }
+
+  /**
+   *
+   * @param {Record<string, number>} param0
+   * @returns
+   */
   static reduceObj({ ...obj } = {}) {
     return Object.values(obj).reduce((acc, data) => {
       if (typeof data !== "number") {
@@ -156,54 +173,43 @@ export class CassExpress {
       return acc + data;
     }, 0);
   }
+
+  /**
+   *
+   * @param {Record<string, number>} obj
+   * @returns
+   */
   static farmMultiplier(obj) {
     const acc = CassExpress.reduceObj(obj);
-    return acc / 500;
+    return acc / 5000;
   }
+
+  /**
+   *
+   * @param {number} price
+   * @param {Record<string, number>} obj
+   * @returns
+   */
   static farmUP(price, obj) {
     const m = CassExpress.farmMultiplier(obj);
     return Math.round(price + price * m);
   }
 
+  /**
+   *
+   * @param {number} str
+   * @returns
+   */
   static parseAbbrIng(str) {
-    return parseInt(CassExpress.parseAbbr(str));
+    return parseInt(String(CassExpress.parseAbbr(String(str))));
   }
+  /**
+   *
+   * @param {string} str
+   * @returns
+   */
   static parseAbbr(str) {
-    const multipliers = {
-      K: 1e3,
-      k: 1e3,
-      M: 1e6,
-      m: 1e6,
-      B: 1e9,
-      b: 1e9,
-      T: 1e12,
-      t: 1e12,
-      Q: 1e15,
-      q: 1e15,
-      S: 1e18,
-      s: 1e18,
-      N: 1e21,
-      n: 1e21,
-    };
-
-    const regex = /^([\d,.]+)\s*([KkMmBbTtQqSsNn]?)$/;
-
-    const match = str.match(regex);
-
-    if (match) {
-      const numberPart = parseFloat(match[1].replace(/,/g, ""));
-      const abbreviation = match[2];
-
-      if (abbreviation === "") {
-        return numberPart;
-      }
-
-      if (multipliers[abbreviation] !== undefined) {
-        return numberPart * multipliers[abbreviation];
-      }
-    }
-
-    return NaN;
+    return parseBet(str);
   }
 
   raw() {
@@ -222,7 +228,7 @@ export class CassExpress {
     return this.getBankLogs().map((log) => {
       if (!log) return "";
 
-      const formattedAmount = `$**${pCy(parseInt(log.amount))}**💵`;
+      const formattedAmount = `$**${pCy(Math.floor(log.amount))}**💵`;
       const formattedDate = CassExpress.formatDate(log.timeStamp);
 
       switch (log.type) {
@@ -238,18 +244,35 @@ export class CassExpress {
     });
   }
 
+  /**
+   *
+   * @param {number} amount
+   */
   bankInLog(amount) {
     this._addBankLog("in", amount);
   }
 
+  /**
+   *
+   * @param {number} interest
+   */
   bankInterestLog(interest) {
     this._addBankLog("interest", interest);
   }
 
+  /**
+   *
+   * @param {number} amount
+   */
   bankOutLog(amount) {
     this._addBankLog("out", amount);
   }
 
+  /**
+   *
+   * @param {CassExpress["cassExpress"]["bankLogs"][number]["type"]} type
+   * @param {number} amount
+   */
   _addBankLog(type, amount) {
     const logs = this.getBankLogs();
     if (logs.length >= 20) logs.shift();
@@ -261,6 +284,11 @@ export class CassExpress {
     return this.cassExpress.mailList;
   }
 
+  /**
+   *
+   * @param {CassExpress["cassExpress"]["mailList"][number]} mail
+   * @returns
+   */
   static stringMail(mail) {
     return `💌 **${mail.title}** ${CassExpress.formatDate(mail.timeStamp)}\n\n${
       mail.body
@@ -271,6 +299,11 @@ export class CassExpress {
     return this.getMailList().map(CassExpress.stringMail);
   }
 
+  /**
+   *
+   * @param {{ name: string; uid: string; amount: number; author: string; }} param0
+   * @returns
+   */
   setMailReceived({ name, uid, amount, author }) {
     const body = `You received $**${pCy(
       amount
@@ -283,6 +316,11 @@ export class CassExpress {
     });
   }
 
+  /**
+   *
+   * @param {{ name: string; uid: string; amount: number; author: string; }} param0
+   * @returns
+   */
   setMailSent({ name, uid, amount, author }) {
     const body = `You successfully sent $**${pCy(
       amount
@@ -295,6 +333,11 @@ export class CassExpress {
     });
   }
 
+  /**
+   *
+   * @param {CassExpress["cassExpress"]["mailList"][number]} param0
+   * @returns
+   */
   createMail({ body, timeStamp = Date.now(), title = "Untitled", author }) {
     if (!author || !body) {
       throw new Error("Missing author or body.");
@@ -309,6 +352,11 @@ export class CassExpress {
     return mail;
   }
 
+  /**
+   *
+   * @param {CassExpress["cassExpress"]["mailList"][number]} mailData
+   * @returns
+   */
   deleteMail(mailData) {
     const mailList = this.getMailList();
     const index = mailList.findIndex((mail) => mail === mailData);
@@ -322,10 +370,18 @@ export class CassExpress {
     return logo;
   }
 
+  /**
+   *
+   * @param {number | Date} date
+   * @returns
+   */
   static formatDate(date) {
     if (!(date instanceof Date)) {
       date = new Date(date || Date.now());
     }
+    /**
+     * @type {Intl.DateTimeFormatOptions}
+     */
     const options = {
       year: "numeric",
       month: "2-digit",

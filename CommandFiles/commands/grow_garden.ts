@@ -72,7 +72,7 @@ export const meta: CommandMeta = {
   name: "garden",
   description: "Grow crops and earn Money in your garden!",
   otherNames: ["grow", "growgarden", "gr", "g", "gag", "plant"],
-  version: "2.1.9",
+  version: "2.2.0",
   usage: "{prefix}{name} [subcommand]",
   category: "Idle Investment Games",
   author: "Solo Programmed By: Liane Cagara 🎀",
@@ -149,7 +149,7 @@ export const treasuresTable: InventoryItem[] = [
       return {
         ...inventoryItem,
         group: ["generic", "gardenShop"],
-        prob: shopItem.stockChance ?? 0.5,
+        prob: (shopItem.stockChance ?? 0.5) ** 3,
       };
     })
     .filter(Boolean),

@@ -34,7 +34,7 @@ export const giftKinds: InventoryItem[] = [];
 if (true) {
   const gift = generateGiftPack();
   giftKinds.push(gift);
-  gift.name = "Special Gift #1";
+  gift.name = "Gift Pack #1";
   gift.icon = "🎁🍒";
   gift.key = "fGiftPack";
   gift.flavorText =
@@ -45,7 +45,7 @@ if (true) {
 if (true) {
   const gift = generateGiftPack();
   giftKinds.push(gift);
-  gift.name = "Special Gift #2";
+  gift.name = "Gift Pack #2";
   gift.icon = "🎁⚔️";
   gift.flavorText =
     "Either a weapon your pet could wield, a rare irrelevant item, or just some trash.";
@@ -56,7 +56,7 @@ if (true) {
 if (true) {
   const gift = generateGiftPack();
   giftKinds.push(gift);
-  gift.name = "Special Gift #3";
+  gift.name = "Gift Pack #3";
   gift.flavorText = "Either a trash, a rare irrelevant item, or more trash.";
   gift.icon = "🎁❌";
   gift.key = "uGiftPack";
@@ -66,7 +66,7 @@ if (true) {
 if (true) {
   const gift = generateGiftPack();
   giftKinds.push(gift);
-  gift.name = "Special Gift #4";
+  gift.name = "Gift Pack #4";
   gift.icon = "🎁🐶";
   gift.flavorText =
     "Either a new companion, a rare irrelevant item, or just some trash.";
@@ -78,7 +78,7 @@ if (true) {
 if (true) {
   const gift = generateGiftPack();
   giftKinds.push(gift);
-  gift.name = "Special Gift #5";
+  gift.name = "Gift Pack #5";
   gift.icon = "🎁🎴";
   gift.flavorText = "Either a rare important item, or maybe some trash.";
   gift.key = "nGiftPack";
