@@ -475,6 +475,131 @@ export class CanvCass {
     ctx.restore();
   }
 
+  drawFlexbox(
+    container: {
+      rect: CanvCass.Rect;
+      flexDirection?: "row" | "column";
+      justifyContent?:
+        | "flex-start"
+        | "center"
+        | "flex-end"
+        | "space-between"
+        | "space-around";
+      alignItems?: "flex-start" | "center" | "flex-end" | "stretch";
+      gap?: number;
+    },
+    children: Array<
+      | (Partial<CanvCass.MakeRectParam> & { fill?: CanvCass.Color })
+      | ((rect: CanvCass.Rect, index: number) => void)
+    >
+  ) {
+    const {
+      rect: containerRect,
+      flexDirection = "row",
+      justifyContent = "flex-start",
+      alignItems = "flex-start",
+      gap = 0,
+    } = container;
+
+    const isRow = flexDirection === "row";
+    const containerMain = isRow ? containerRect.width : containerRect.height;
+    const containerCross = isRow ? containerRect.height : containerRect.width;
+
+    const childSizes = children.map((child) => {
+      if (typeof child === "function") return { width: 0, height: 0 };
+      return { width: child.width!, height: child.height! };
+    });
+
+    let totalMain =
+      childSizes.reduce((sum, c) => sum + (isRow ? c.width : c.height), 0) +
+      Math.max(0, children.length - 1) * gap;
+
+    let adjustedGap = gap;
+    let mainStart = 0;
+    const extraSpace = containerMain - totalMain;
+
+    switch (justifyContent) {
+      case "flex-start":
+        mainStart = 0;
+        break;
+      case "center":
+        mainStart = extraSpace / 2;
+        break;
+      case "flex-end":
+        mainStart = extraSpace;
+        break;
+      case "space-between":
+        mainStart = 0;
+        adjustedGap =
+          children.length > 1 ? extraSpace / (children.length - 1) : 0;
+        break;
+      case "space-around":
+        adjustedGap = extraSpace / children.length;
+        mainStart = adjustedGap / 2;
+        break;
+    }
+
+    let pos = mainStart;
+
+    children.forEach((child, idx) => {
+      let width: number, height: number;
+
+      if (typeof child === "function") {
+        width = childSizes[idx].width || 0;
+        height = childSizes[idx].height || 0;
+      } else {
+        width = child.width!;
+        height = child.height!;
+      }
+
+      let crossPos = 0;
+      switch (alignItems) {
+        case "flex-start":
+          crossPos = 0;
+          break;
+        case "center":
+          crossPos = (containerCross - (isRow ? height : width)) / 2;
+          break;
+        case "flex-end":
+          crossPos = containerCross - (isRow ? height : width);
+          break;
+        case "stretch":
+          if (isRow) height = containerCross;
+          else width = containerCross;
+          crossPos = 0;
+          break;
+      }
+
+      let childRect: CanvCass.Rect;
+      if (isRow) {
+        childRect = CanvCass.createRect({
+          width,
+          height,
+          left: containerRect.left + pos,
+          top: containerRect.top + crossPos,
+        });
+        pos += width + adjustedGap;
+      } else {
+        childRect = CanvCass.createRect({
+          width,
+          height,
+          left: containerRect.left + crossPos,
+          top: containerRect.top + pos,
+        });
+        pos += height + adjustedGap;
+      }
+
+      if (typeof child === "function") {
+        child(childRect, idx);
+      } else {
+        this.drawBox({
+          rect: childRect,
+          fill: child.fill,
+        });
+      }
+    });
+  }
+
   drawText(
     text: string,
     x: number,
