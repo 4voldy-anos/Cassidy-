@@ -87,6 +87,7 @@ export async function entry({
       const pfp = await loadImage(bg);
       await canv.drawImage(pfp, canv.left, canv.top, {
         width: canv.width,
+        maximizeFit: true,
       });
 
       const bottomHalf = CanvCass.createRect({

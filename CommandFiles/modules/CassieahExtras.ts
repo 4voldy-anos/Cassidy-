@@ -943,6 +943,23 @@ export class CanvCass implements CanvCass.Rect {
       width = image.width;
       height = image.height;
     }
+
+    if (options?.maximizeFit) {
+      const targetW = width;
+      const targetH = height;
+
+      const scale = Math.max(targetW / image.width, targetH / image.height);
+
+      const newW = image.width * scale;
+      const newH = image.height * scale;
+
+      x -= (newW - targetW) / 2;
+      y -= (newH - targetH) / 2;
+
+      width = newW;
+      height = newH;
+    }
+
     ctx.drawImage(image, x, y, width, height);
 
     ctx.restore();
@@ -1091,6 +1108,7 @@ export namespace CanvCass {
     width?: number;
     height?: number;
     clipTo?: Path2D;
+    maximizeFit?: boolean;
   }
 
   export type Color = string | CanvasGradient;
