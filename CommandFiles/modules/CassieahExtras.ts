@@ -672,7 +672,7 @@ export class CanvCass implements CanvCass.Rect {
     ctx.save();
 
     const lineHeight = size + (yMargin ?? 0);
-    const direction = breakTo === "top" ? 0 : 1;
+    const direction = breakTo === "top" ? -1 : 1;
 
     ctx.font = font;
     ctx.textAlign = align;
@@ -691,7 +691,6 @@ export class CanvCass implements CanvCass.Rect {
 
     if (breakTo === "top") {
       lines.reverse();
-      ty -= lineHeight * (lines.length - 1);
     }
 
     for (const line of lines) {
@@ -709,6 +708,38 @@ export class CanvCass implements CanvCass.Rect {
 
     ctx.restore();
   }
+
+  createDim(
+    rect: CanvCass.Rect,
+    options?: {
+      fadeStart?: number;
+      fadeEnd?: number;
+      color?: string;
+    }
+  ): CanvasGradient {
+    const {
+      fadeStart = 0,
+      fadeEnd = 1,
+      color = "rgba(0, 0, 0, 0.7)",
+    } = options ?? {};
+    const ctx = this.#context;
+
+    const gradient = ctx.createLinearGradient(
+      rect.left,
+      rect.top,
+      rect.left,
+      rect.bottom
+    );
+
+    gradient.addColorStop(0, "transparent");
+    gradient.addColorStop(fadeStart, "transparent");
+    gradient.addColorStop(fadeEnd, color);
+
+    return gradient;
+  }
+
+  loadImage = loadImage;
+  static loadImage = loadImage;
 
   #processFont(options: Partial<CanvCass.DrawTextParam>) {
     if (!options.cssFont) {

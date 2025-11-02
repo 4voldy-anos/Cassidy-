@@ -74,16 +74,7 @@ export async function entry({
       height: canv.height / 2,
     });
 
-    const gradient = canv.tiltedGradient(
-      bottomHalfRect.width,
-      bottomHalfRect.height * 2,
-      Math.PI / 2,
-      [
-        [0, "transparent"],
-        [0.5, "transparent"],
-        [1, "black"],
-      ]
-    );
+    const gradient = canv.createDim(bottomHalfRect);
 
     canv.drawBox({
       rect: bottomHalfRect,
