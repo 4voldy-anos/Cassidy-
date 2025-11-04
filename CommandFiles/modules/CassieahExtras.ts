@@ -1087,6 +1087,30 @@ export class CanvCass implements CanvCass.Rect {
     return path;
   }
 
+  /**
+   * Creates a cornered rectangle path 2D.
+   * @param radius - The radius of the corners
+   * @param rect - The reference rect.
+   * @returns A Path2D object representing the cornered rectangle
+   */
+  static createCorneredRectPath(radius: number, rect: CanvCass.Rect) {
+    const { left, top, width, height } = rect;
+    const right = left + width;
+    const bottom = top + height;
+    const path = new Path2D();
+    path.moveTo(left + radius, top);
+    path.arc(left + radius, top + radius, radius, Math.PI, Math.PI * 1.5);
+    path.lineTo(right - radius, top);
+    path.arc(right - radius, top + radius, radius, Math.PI * 1.5, 0);
+    path.lineTo(right, bottom - radius);
+    path.arc(right - radius, bottom - radius, radius, 0, Math.PI / 2);
+    path.lineTo(left + radius, bottom);
+    path.arc(left + radius, bottom - radius, radius, Math.PI / 2, Math.PI);
+    path.lineTo(left, top + radius);
+    path.closePath();
+    return path;
+  }
+
   #processFont(options: Partial<CanvCass.DrawTextParam>) {
     if (!options.cssFont) {
       options.fontType ??= "cnormal";
