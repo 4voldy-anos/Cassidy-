@@ -13,15 +13,15 @@
   "knownURL": "https://cassidyredux.onrender.com",
   "noFB": false,
   "PREFIX": "#",
-  "NICKNAME": "Cassidy Bot",
+  "NICKNAME": "۝𝐶𝐻𝑅𝐼𝑆𝑇𝑈𝑆 𝐵𝑂𝑇۝",
   "CUSTOM_STYLE": {
     "enabled": false,
     "note": "When enabled, this will allow you to customize certain styles of bot responses. {word} represents non-emoji texts and {emojis} represents emojis. Change the TITLE_PATTERN to your likings.",
     "TITLE_PATTERN": "{emojis}【 {word} 】{emojis}"
   },
   "LOGO": "",
-  "ADMINBOT": ["100075058221244", "YOUR_UID"],
-  "EXTRAPREFIX": ["_"],
+  "ADMINBOT": ["61580333625022", "61568791604271"],
+  "EXTRAPREFIX": ["_","¥"],
   "MODERATORBOT": [],
   "exitOnError": false,
   "WEB_PASSWORD": "wsshiagwvkljijxxsvddidbdib+_*77s",
