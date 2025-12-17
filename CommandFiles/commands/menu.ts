@@ -8,7 +8,7 @@ import { ShopClass } from "@cass-plugins/shopV2";
 import stringSimilarity from "string-similarity";
 
 export const meta: CommandMeta = {
-  name: "menu",
+  name: "menu2",
   author: "@lianecagara",
   description:
     "Acts as a central hub, like a Start Menu, providing users with an overview of available commands, their functionalities, and access to specific command details. Helps users quickly navigate the bot's features.",
@@ -19,7 +19,7 @@ export const meta: CommandMeta = {
   waitingTime: 0.1,
   requirement: "3.0.0",
   icon: "🧰",
-  otherNames: ["start", "help"],
+  otherNames: ["start2", "help2"],
 };
 
 export const style: CommandStyle = {
