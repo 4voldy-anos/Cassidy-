@@ -1,20 +1,21 @@
 import axios, { AxiosResponse } from "axios";
 import { StrictOutputForm } from "output-cassidy";
 
-const API_URL = "https://haji-mix-api.gleeze.com/api/aria";
+const API_URL = "https://rapido.zetsu.xyz/api/aria";
+const API_KEY = "rapi_55197dde42fb4272bfb8f35bd453ba25";
 
 const cmd = easyCMD({
   name: "aria",
   meta: {
-    otherNames: ["ariaai", "gleeze", "askaria"],
-    author: "Christus dev AI",
-    description: "Aria AI – Friendly assistant to find useful information",
+    otherNames: ["rapidoai"],
+    author: "Christus dev AI""
+    description: "Aria AI – Powered by Zetsu Rapido",
     icon: "🤖",
     version: "1.0.0",
     noPrefix: "both",
   },
   title: {
-    content: "Aria AI 🤖",
+    content: "Aria 🤖",
     text_font: "bold",
     line_bottom: "default",
   },
@@ -29,50 +30,47 @@ const cmd = easyCMD({
 });
 
 interface AriaResponse {
-  user_ask: string;
-  answer: string;
-  usage?: string;
+  status: boolean;
+  operator: string;
+  response: string;
 }
 
 async function main({
   output,
   args,
-  input,
   cancelCooldown,
-}: CommandContext & { uid?: string }) {
+}: CommandContext) {
   const prompt = args.join(" ").trim();
-  await output.reaction("🟡");
+  await output.reaction("⏳");
 
   if (!prompt) {
     cancelCooldown();
-    await output.reaction("🔴");
+    await output.reaction("❌");
     return output.reply(
-      "❓ Please provide a prompt for Aria AI.\n\nExample: aria Hello!"
+      "❓ Please provide a prompt.\n\nExample: aria Hello!"
     );
   }
 
   try {
-    const params = {
-      ask: prompt,
-      stream: false,
-    };
-
     const res: AxiosResponse<AriaResponse> = await axios.get(API_URL, {
-      params,
+      params: {
+        prompt,
+        apikey: API_KEY,
+      },
       timeout: 20_000,
     });
 
-    const answer =
-      res.data?.answer || "⚠️ No response from Aria AI.";
+    const answerText =
+      res.data?.response || "No response received from Aria.";
 
     const form: StrictOutputForm = {
       body:
         `🤖 **Aria AI**\n\n` +
-        `${answer}\n\n` +
+        `${answerText}\n\n` +
         `***Reply to continue the conversation.***`,
     };
 
-    await output.reaction("🟢");
+    await output.reaction("✅");
     const info = await output.reply(form);
 
     // 🔁 Conversation continue
@@ -84,8 +82,8 @@ async function main({
       });
     });
   } catch (err: any) {
-    console.error("Aria AI API Error:", err?.message || err);
-    await output.reaction("🔴");
+    console.error("Aria API Error:", err?.message || err);
+    await output.reaction("❌");
     cancelCooldown();
     return output.reply(
       `❌ Failed to connect to Aria AI.\n\nMessage: ${
