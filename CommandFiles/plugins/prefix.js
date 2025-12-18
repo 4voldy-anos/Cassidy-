@@ -46,7 +46,7 @@ export async function use(obj) {
     const margin = 100;
     const ymargin = 20;
 
-    canv.drawText(`🏂 ChristusBoT`, {
+    canv.drawText(`🏂 Christus BoT`, {
       fontType: "cbold",
       size: 65,
       x: container.left + margin,
