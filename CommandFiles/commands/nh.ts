@@ -20,7 +20,7 @@ export const meta: CommandMeta = {
 };
 
 export const style: CommandStyle = {
-  title: "Astral • NHentai Search 🌌",
+  title: "CHRISTUS • NHentai Search 🌌",
   titleFont: "bold",
   contentFont: "fancy",
 };
@@ -52,7 +52,7 @@ export const entry = defineEntry(async ({ input, output, args, langParser }) => 
     const results = Object.values(data).filter((v: any) => v.title).slice(0, 5);
     if (!results.length) return output.reply(getLang("noResults"));
 
-    let message = `Astral • NHentai Results 🌌\n`;
+    let message = `Christus • NHentai Results 🌌\n`;
     results.forEach((item: any, i: number) => {
       message += `\n${i + 1}. ${item.title}`;
     });
