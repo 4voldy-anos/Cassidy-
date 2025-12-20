@@ -14,7 +14,7 @@ export const meta: CommandMeta = {
   description: "Generate artistic AI images",
   category: "AI",
   usage: "{prefix}{name} <prompt> [--r X:Y] [--nw]",
-  : 2,
+  role: 2,
   waitingTime: 5,
   icon: "🎨",
   noLevelUI: true,
