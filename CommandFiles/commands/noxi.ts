@@ -15,7 +15,7 @@ export const meta: CommandMeta = {
   version: "1.0.0",
   usage: "{prefix}{name} <mot-clé>",
   category: "NSFW",
-  role: 0,
+  role: 2,
   waitingTime: 5,
   otherNames: ["xnxx", "xnxxsearch"],
   icon: "📺",
@@ -177,4 +177,4 @@ export async function reply({
     page: newPage,
     pageSize,
   });
-}
+  }
