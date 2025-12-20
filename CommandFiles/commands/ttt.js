@@ -6,9 +6,9 @@
  */
 export const meta = {
   name: "ttt",
-  description: "Tic-Tac-Toe game",
+  description: "Tic-Tac-Toe game (IA imbattable)",
   author: "@lianecagara",
-  version: "1.0.0",
+  version: "1.1.0",
   usage: "{prefix}{name}",
   category: "Chance Games",
   permissions: [0],
@@ -76,26 +76,55 @@ class TicTacToe {
     );
   }
 
+  // IA imbattable avec Minimax
   makeAIMoveV2() {
-    if (Math.random() < 0.3) return this.makeAIMove();
-
-    for (const c of WINNING_COMBINATIONS) {
-      const own = c.filter(i => this.board[i] === this.currentPlayer);
-      const empty = c.find(i => this.board[i] === EMPTY);
-      if (own.length === 2 && empty !== undefined) {
-        this.board[empty] = this.currentPlayer;
-        return;
-      }
-    }
-    this.makeAIMove();
+    const bestMove = this.findBestMove();
+    this.board[bestMove] = this.currentPlayer;
   }
 
-  makeAIMove() {
-    const empty = this.board
-      .map((v, i) => (v === EMPTY ? i : null))
-      .filter(v => v !== null);
-    const slot = empty[Math.floor(Math.random() * empty.length)];
-    this.board[slot] = this.currentPlayer;
+  findBestMove() {
+    let bestVal = -Infinity;
+    let move = -1;
+    for (let i = 0; i < 9; i++) {
+      if (this.board[i] === EMPTY) {
+        this.board[i] = this.currentPlayer;
+        let moveVal = this.minimax(0, false);
+        this.board[i] = EMPTY;
+        if (moveVal > bestVal) {
+          bestVal = moveVal;
+          move = i;
+        }
+      }
+    }
+    return move;
+  }
+
+  minimax(depth, isMax) {
+    if (checkWin(this.board, O)) return 10 - depth;
+    if (checkWin(this.board, X)) return depth - 10;
+    if (!this.board.includes(EMPTY)) return 0;
+
+    if (isMax) {
+      let best = -Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (this.board[i] === EMPTY) {
+          this.board[i] = O;
+          best = Math.max(best, this.minimax(depth + 1, false));
+          this.board[i] = EMPTY;
+        }
+      }
+      return best;
+    } else {
+      let best = Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (this.board[i] === EMPTY) {
+          this.board[i] = X;
+          best = Math.min(best, this.minimax(depth + 1, true));
+          this.board[i] = EMPTY;
+        }
+      }
+      return best;
+    }
   }
 
   playRound(slot, onWin = () => {}) {
@@ -178,4 +207,4 @@ export async function reply({
   if (result === "CONTINUE" || result === "❌ Coup invalide") {
     input.setReply(sent.messageID, repObj);
   }
-  }
+}
