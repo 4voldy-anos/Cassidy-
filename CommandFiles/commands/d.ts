@@ -1,38 +1,51 @@
-import { getFbVideoInfo } from "fb-downloader-scrapper";
+import axios from "axios";
+
+const supportedDomains = [
+  "facebook.com",
+  "fb.watch",
+  "youtube.com",
+  "youtu.be",
+  "tiktok.com",
+  "instagram.com",
+  "instagr.am",
+  "likee.com",
+  "likee.video",
+  "capcut.com",
+  "spotify.com",
+  "terabox.com",
+  "twitter.com",
+  "x.com",
+  "drive.google.com",
+  "soundcloud.com",
+  "ndown.app",
+  "pinterest.com",
+  "pin.it",
+];
 
 export const meta: CommandMeta = {
   name: "autodl",
   description:
-    "Autodownloader for Facebook videos. Automatically detects and downloads media from Facebook URLs. Upcoming support: Spotify, YouTube, YouTube Music, Twitter, and Instagram.",
+    "Automatically downloads media from multiple platforms (Facebook, YouTube, TikTok, Instagram, Twitter/X, Spotify, etc.)",
   version: "2.0.0",
-  author: "0xVoid, Kayelee",
-  requirement: "2.5.0",
+  author: "Christus dev AI",
   icon: "📥",
-  category: "Media",
-  role: 1,
+  category: "Utility",
+  role: 0,
   noWeb: true,
 };
 
 export const style: CommandStyle = {
-  title: "📥 Facebook Downloader",
+  title: "📥 Auto Downloader",
   titleFont: "bold",
   contentFont: "fancy",
 };
 
-function formatDuration(durationMs: number) {
-  const units = [
-    { unit: "hr", factor: 3600000 },
-    { unit: "min", factor: 60000 },
-    { unit: "sec", factor: 1000 },
-    { unit: "ms", factor: 1 },
-  ];
-  for (const { unit, factor } of units) {
-    if (durationMs >= factor) {
-      const value = durationMs / factor;
-      return `${value % 1 === 0 ? value.toFixed(0) : value.toFixed(1)} ${unit}`;
-    }
-  }
-  return "0 ms";
+function detectPlatform(url: string): string {
+  const domain =
+    supportedDomains.find((d) => url.includes(d)) ?? "Unknown Platform";
+  return domain
+    .replace(/(\.com|\.app|\.video|\.net)/gi, "")
+    .toUpperCase();
 }
 
 export async function entry({
@@ -41,54 +54,70 @@ export async function entry({
   threadsDB,
   args,
 }: CommandContext) {
-  if (!input.isAdmin) {
-    return output.reply("You cannot enable/disable this feature.");
-  }
-  const isEna = (await threadsDB.queryItem(input.threadID, "autodl"))?.autodl;
-  let choice =
-    args[0] === "on" ? true : args[0] === "off" ? false : isEna ? !isEna : true;
+  const isEnabled =
+    (await threadsDB.queryItem(input.threadID, "autodl"))?.autodl ?? true;
+
+  const choice =
+    args[0] === "on"
+      ? true
+      : args[0] === "off"
+      ? false
+      : !isEnabled;
+
   await threadsDB.setItem(input.threadID, {
     autodl: choice,
   });
 
-  return output.reply(`✅ ${choice ? "Enabled" : "Disabled"} successfully!`);
+  return output.reply(
+    `📥 Auto Downloader ${choice ? "enabled ✅" : "disabled ❌"}`
+  );
 }
 
-export async function event({ output, input, threadsDB }: CommandContext) {
+export async function event({
+  output,
+  input,
+  threadsDB,
+}: CommandContext) {
   try {
     const cache = await threadsDB.getCache(input.threadID);
-    if (cache.autodl === false) {
-      return;
-    }
-    const prompt = String(input);
-    if (
-      prompt.match(/^https:\/\/(www\.)?(facebook\.com|fb\.watch)/)?.length > 0
-    ) {
-      output.react("🔎");
-      const data = await getFbVideoInfo(prompt);
-      let Title = data.title;
-      const emojiMatch = Title.match(/&#x([0-9a-fA-F\-]+);?/);
-      if (emojiMatch) {
-        const hexStr = emojiMatch[1].toUpperCase();
-        const codePoints = hexStr.split("-").map((part) => parseInt(part, 16));
-        const emoji = String.fromCodePoint(...codePoints);
-        Title = Title.replace(emojiMatch[0], emoji);
-      }
-      if (data.hd || data.sd) {
-        output.react("📥");
-        await output.replyStyled(
-          {
-            body: `**${Title}**\n⏱️ **${formatDuration(data.duration_ms)}**`,
-            attachment: await global.utils.getStreamFromURL(data.hd || data.sd),
-          },
-          style
-        );
-        output.reaction("✅");
-      } else {
-        output.reaction("❌");
-      }
-    }
+    if (cache.autodl === false) return;
+
+    const content = String(input).trim();
+    if (!content.startsWith("https://")) return;
+    if (!supportedDomains.some((d) => content.includes(d))) return;
+
+    output.react("⌛");
+
+    const API = `https://xsaim8x-xxx-api.onrender.com/api/auto?url=${encodeURIComponent(
+      content
+    )}`;
+
+    const res = await axios.get(API);
+    if (!res.data) throw new Error("Empty API response");
+
+    const mediaURL = res.data.high_quality || res.data.low_quality;
+    if (!mediaURL) throw new Error("Media URL not found");
+
+    const title = res.data.title ?? "Unknown Title";
+    const platform = detectPlatform(content);
+
+    await output.replyStyled(
+      {
+        body: `━━━━━━━━━━━━━━
+𝐌𝐞𝐝𝐢𝐚 𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝𝐞𝐝 ✅
+╭─╼━━━━━━━━╾─╮
+│ Title      : ${title}
+│ Platform   : ${platform}
+│ Status     : Success
+╰─━━━━━━━━━╾─╯
+━━━━━━━━━━━━━━`,
+        attachment: await global.utils.getStreamFromURL(mediaURL),
+      },
+      style
+    );
+
+    output.reaction("✅");
   } catch (err) {
-    output.replyStyled(require("util").inspect(err), style);
+    output.reaction("❌");
   }
 }
