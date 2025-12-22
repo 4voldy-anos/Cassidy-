@@ -16,7 +16,7 @@ export const meta: CommandMeta = {
   description: "Generate images using FastFlux AI",
   category: "AI",
   usage: "{prefix}{name} <prompt>",
-  role: 0,
+  role: 2,
   waitingTime: 5,
   icon: "⚡",
   noLevelUI: true,
