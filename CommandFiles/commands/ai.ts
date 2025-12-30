@@ -8,13 +8,14 @@ import { UNISpectra } from "@cassidy/unispectra";
 
 const API_ENDPOINT = "https://shizuai.vercel.app/chat";
 const CLEAR_ENDPOINT = "https://shizuai.vercel.app/chat/clear";
-
 const TMP_DIR = path.join(__dirname, "cache");
+
+/* ================= META ================= */
 
 export const meta: CommandMeta = {
   name: "ai",
   description: "Assistant IA avancé (texte, image, musique, vidéo, lyrics)",
-  author: "Aryan Chauchan • TS fixed by  Christus",
+  author: "Aryan Chauchan • TS fixed by Christus",
   version: "3.0.0",
   usage: "ai <message | image>",
   category: "AI",
@@ -22,7 +23,7 @@ export const meta: CommandMeta = {
   waitingTime: 3,
   icon: "🤖",
   noLevelUI: true,
-  noPrefix: true, // ✅ Commande utilisable sans préfixe
+  noPrefix: true,
 };
 
 export const style: CommandStyle = {
@@ -30,6 +31,8 @@ export const style: CommandStyle = {
   titleFont: "bold",
   contentFont: "fancy",
 };
+
+/* ================= LANG ================= */
 
 export const langs = {
   fr: {
@@ -48,27 +51,40 @@ export const langs = {
   },
 };
 
+/* ================= UTILS ================= */
+
 async function download(url: string, ext: string): Promise<string> {
   await fs.ensureDir(TMP_DIR);
-  const file = path.join(TMP_DIR, `${uuidv4()}.${ext}`);
+  const filePath = path.join(TMP_DIR, `${uuidv4()}.${ext}`);
   const res = await axios.get(url, { responseType: "arraybuffer" });
-  await fs.writeFile(file, res.data);
-  return file;
+  await fs.writeFile(filePath, res.data);
+  return filePath;
 }
+
+/* ================= NORMALIZE ================= */
+
+function normalizeText(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(/Aryan\s*Chauchan/gi, "Christus")
+    .replace(/Aryan\s*Chauhan/gi, "Christus")
+    .replace(/A\.?\s*Chauchan/gi, "Christus");
+}
+
+/* ================= ENTRY ================= */
 
 export const entry = defineEntry(async ({ args, event, output, langParser }) => {
   const getLang = langParser.createGetLang(langs);
   const userId = event.senderID;
   const input = args.join(" ").trim();
 
-  if (!input && !event.attachments?.length)
+  if (!input && !event.attachments?.length) {
     return output.reply(getLang("noInput"));
+  }
 
   if (["clear", "reset"].includes(input.toLowerCase())) {
     try {
-      await axios.delete(
-        `${CLEAR_ENDPOINT}/${encodeURIComponent(userId)}`
-      );
+      await axios.delete(`${CLEAR_ENDPOINT}/${encodeURIComponent(userId)}`);
       return output.reply(getLang("resetSuccess"));
     } catch {
       return output.reply(getLang("resetFail"));
@@ -83,18 +99,15 @@ export const entry = defineEntry(async ({ args, event, output, langParser }) => 
     `${UNISpectra.charm} ${getLang("processing")}\n• 📅 ${timestamp}`
   );
 
-  // Récupération de l'image
+  /* ===== IMAGE DETECTION ===== */
+
   let imageUrl: string | null = null;
 
-  // Image envoyée directement
   const directImage = event.attachments?.find(a => a.type === "photo");
-  if (directImage) imageUrl = directImage.url;
+  if (directImage?.url) imageUrl = directImage.url;
 
-  // Image via reply
-  const replyImage = event.messageReply?.attachments?.find(
-    a => a.type === "photo"
-  );
-  if (replyImage) imageUrl = replyImage.url;
+  const replyImage = event.messageReply?.attachments?.find(a => a.type === "photo");
+  if (replyImage?.url) imageUrl = replyImage.url;
 
   const createdFiles: string[] = [];
 
@@ -114,7 +127,7 @@ export const entry = defineEntry(async ({ args, event, output, langParser }) => 
       lyrics_data,
     } = res.data;
 
-    let body = reply || "✅ AI Response";
+    let body = normalizeText(reply || "✅ AI Response");
     const attachments: any[] = [];
 
     if (image_url) {
@@ -135,16 +148,15 @@ export const entry = defineEntry(async ({ args, event, output, langParser }) => 
       createdFiles.push(file);
     }
 
-    if (shoti_data?.videoUrl) {
-      const file = await download(shoti_data.videoUrl, "mp4");
+    if (shoti_data?.downloadUrl) {
+      const file = await download(shoti_data.downloadUrl, "mp4");
       attachments.push(fs.createReadStream(file));
       createdFiles.push(file);
     }
 
     if (lyrics_data?.lyrics) {
-      body += `\n\n🎵 ${lyrics_data.track_name}\n${lyrics_data.lyrics.slice(
-        0,
-        1500
+      body += `\n\n🎵 ${lyrics_data.track_name}\n${normalizeText(
+        lyrics_data.lyrics.slice(0, 1500)
       )}`;
     }
 
@@ -160,7 +172,6 @@ export const entry = defineEntry(async ({ args, event, output, langParser }) => 
     await output.unsend(loading.messageID);
     await output.reply(getLang("error"));
   } finally {
-    // Nettoyage safe
     for (const file of createdFiles) {
       if (await fs.pathExists(file)) {
         await fs.remove(file);
